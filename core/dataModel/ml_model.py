@@ -1,3 +1,4 @@
+from logs.logger import AppLogs,writeLog
 import constants as const
 from sklearn.model_selection import train_test_split
 from sklearn.linear_model import LogisticRegression
@@ -5,10 +6,17 @@ from sklearn.tree import DecisionTreeClassifier
 import pickle
 from sklearn.metrics import confusion_matrix
 import numpy as np
+import time
+import pathlib
+import os
+from sklearn.metrics import accuracy_score
+import json
+import pandas as pd
 from imblearn.over_sampling import SMOTE
 
 
 class MLModel():
+    model_dir = 'artifacts'
     
     def __init__(self,df):
         self.df = df 
@@ -59,8 +67,15 @@ class MLModel():
             model_score_r = dtree.score(X_test, y_test)
             print(model_score_r)
 
+            score = accuracy_score(y_test,ypred)
+
+            results = {
+                'Model_name':const.MODEL_TYPE,
+                'Accuracy':score
+            }
+
             
-            return dtree
+            return dtree,results
 
         except Exception as e:
             print("Exception occur in fit model")
@@ -70,16 +85,32 @@ class MLModel():
     
     def save_model(self,model):
         try:
+            timestamp = int(time.time())
+            file_path = os.path.join(os.getcwd(),MLModel.model_dir,str(timestamp))
+            print(file_path)
+            try:
+                print("Checkpoint 1")
+                rs = os.makedirs(file_path)
+                print("Checkpoint 2")
+                print(rs)
+            except Exception as e:
+                print(e)
             file_name = "DecisionTree_model.sav"
-            pickle.dump(model,open(file_name,'wb'))
+            pickle.dump(model,open(os.path.join(file_path,file_name),'wb'))
+            print(file_name)
+            return file_path
         except Exception as e:
             print("Error in model save")
             print(e)
 
     def load_model(self):
         try:
-            loaded_model = pickle.load(open('DecisionTree_model.sav','rb'))
-            return loaded_model
+            model_path = max(pathlib.Path(MLModel.model_dir).glob('*/'),key=os.path.getmtime)
+            file_path = os.path.join(os.getcwd(),model_path)
+            file_name = "DecisionTree_model.sav"
+            loaded_model = pd.read_pickle(open(os.path.join(file_path,file_name),'rb'))
+
+            return loaded_model,file_path
         
         except Exception as e:
             print("Exception in load model")

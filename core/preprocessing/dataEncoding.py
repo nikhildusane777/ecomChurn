@@ -1,8 +1,11 @@
-
 import constants as const
 import pandas as pd
 import category_encoders as ce
 import pickle
+from logs.logger import AppLogs,writeLog
+import os
+
+
 
 
 class DataEncoding():
@@ -30,19 +33,24 @@ class DataEncoding():
         df_binary['Churn'] = self.df['Churn']
         return df_binary
 
-    def save_encoder(self):
+    def save_encoder(self,filepath=None):
         try:
             if self.encoder:
-                with open('binaryencoder.pickle','wb') as f:
+                encoder_filepath = os.path.join(filepath,'binaryencoder.pickle')
+                with open(encoder_filepath,'wb') as f:
                     pickle.dump(self.encoder,f)
         except Exception as e:
             print("Exception in encoder save")
             print(e)
     
-    def retrive_encoder(self):
+    def retrive_encoder(self,file_path = None):
         try:
-            with open('binaryencoder.pickle','rb') as f:
-                encoder_object = pickle.load(f)
+            print("Check 41")
+            print(file_path)
+            file_name = 'binaryencoder.pickle'
+            print(os.path.join(file_path,file_name))
+            with open(os.path.join(file_path,file_name),'rb') as f:
+                encoder_object = pd.read_pickle(f)
                 return encoder_object
             
         except Exception as e:

@@ -68,10 +68,10 @@ class TrainController(Resource):
                 df          = dataEncode.training_data_encode_pipeline(['gender','Partner','Dependents','PhoneService','MultipleLines','InternetService','OnlineSecurity','OnlineBackup','DeviceProtection','TechSupport','StreamingTV','StreamingMovies','Contract','PaperlessBilling','PaymentMethod','tenure_group'])
 
                 ml_model    = MLModel(df)
-                dtree_model = ml_model.fit_model()
+                dtree_model ,results= ml_model.fit_model()
                 
-                ml_model.save_model(dtree_model)
-                dataEncode.save_encoder()
+                file_path = ml_model.save_model(dtree_model)
+                dataEncode.save_encoder(file_path)
 
                 return jsonify({
                     "data":None,
@@ -147,8 +147,8 @@ class MainController(Resource):
                 ml_model = MLModel(df)
                 encoder_obj = DataEncoding(df)
 
-                model = ml_model.load_model()
-                encoder = encoder_obj.retrive_encoder()
+                model,file_path = ml_model.load_model()
+                encoder = encoder_obj.retrive_encoder(file_path)
 
                 if not model or not encoder:
                     raise Exception
